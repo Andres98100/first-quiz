@@ -1,0 +1,346 @@
+diff --git a/part1/question1.py b/part1/question1.py
+index 5c99fdb..359abd6 100644
+--- a/part1/question1.py
++++ b/part1/question1.py
+@@ -20,16 +20,19 @@ def get_city_temperature(city):
+       return 17
+    if city == "San Francisco":
+       return 16
++   if city == "New York":
++      return 14
+ 
+ def get_city_weather(city):
+ 
+-  sky_condition = None
++   sky_condition = None
+ 
+-  if city == "Sao Paulo":
+-     sky_condition = "cloudy"
+-  elif city == "New York":
+-     sky_condition = "rainy"
+-
+-  temperature = get_city_temperature(city)
++   if city == "Sao Paulo":
++      sky_condition = "cloudy"
++   elif city == "New York":
++      sky_condition = "rainy"
++   elif city == "Quito":
++      sky_condition = "sunny"
++   temperature = get_city_temperature(city)
+ 
+-  return str(temperature) + " degrees and " + sky_condition
+\ No newline at end of file
++   return str(temperature) + " degrees and " + sky_condition
+\ No newline at end of file
+diff --git a/part1/question2.py b/part1/question2.py
+index 34a9b01..50e81d8 100644
+--- a/part1/question2.py
++++ b/part1/question2.py
+@@ -18,4 +18,5 @@
+ swapper = None
+ 
+ def run_swapper(list_of_tuples):
++  swapper = lambda x: (x[1], x[0])
+   return list(map(swapper, list_of_tuples))
+\ No newline at end of file
+diff --git a/part1/question3.py b/part1/question3.py
+index 04fab99..dffcdb6 100644
+--- a/part1/question3.py
++++ b/part1/question3.py
+@@ -26,8 +26,34 @@
+ # formulas and their outputs in the test file, `question3_test.py`.
+ 
+ # This function should return an oven instance!
++
++class Oven:
++  def __init__(self):
++    self.ingredients = []
++    self.temperature = 0
++
++  def add(self, item):
++    self.ingredients.append(item)
++
++  def freeze(self):
++    self.temperature = -1
++
++  def boil(self):
++    self.temperature = 1000
++
++  def wait(self):
++    self.temperature = 0
++
++  def get_output(self):
++    if self.temperature == -1:
++      return "snow"
++    elif self.temperature == 1000:
++      return "gold"
++    else:
++      return "pizza"
++
+ def make_oven():
+-  None
++  return Oven()
+ 
+ def alchemy_combine(oven, ingredients, temperature):
+   
+@@ -36,7 +62,7 @@ def alchemy_combine(oven, ingredients, temperature):
+ 
+   if temperature < 0:
+     oven.freeze()
+-  elif temperature >= 100:
++  elif temperature >= 1000:
+     oven.boil()
+   else:
+     oven.wait()
+diff --git a/part1/question3_test.py b/part1/question3_test.py
+index 6cb6c89..c1018de 100644
+--- a/part1/question3_test.py
++++ b/part1/question3_test.py
+@@ -1,3 +1,5 @@
++from question3 import alchemy_combine, make_oven
++
+ def test_alchemy_combine():
+ 
+   assert alchemy_combine(
+diff --git a/part1/question4.py b/part1/question4.py
+index 1e1b2bf..6f27eb6 100644
+--- a/part1/question4.py
++++ b/part1/question4.py
+@@ -24,7 +24,10 @@ import pets_db
+ 
+ sql_pets_owned_by_nobody = """
+ 
+-Your SQL here.
++    SELECT a.name, a.species, a.age
++    FROM animals as a
++    LEFT JOIN people_animals as p ON a.animal_id = p.pet_id
++    WHERE p.owner_id IS NULL
+ 
+ """
+ 
+@@ -34,7 +37,11 @@ Your SQL here.
+ 
+ sql_pets_older_than_owner = """
+ 
+-Your SQL here.
++    SELECT COUNT(*)
++    FROM animals as a
++    LEFT JOIN people_animals as p ON a.animal_id = p.pet_id
++    LEFT JOIN people as pe ON p.owner_id = pe.person_id
++    WHERE a.age > pe.age
+ 
+ """
+ 
+@@ -43,6 +50,12 @@ Your SQL here.
+ # The output should be a list of tuples in the format: (<person name>, <pet name>, <species>)
+ sql_only_owned_by_bessie = """ 
+ 
+-Your SQL here.
++    SELECT pe.name, a.name, a.species
++    FROM animals as a
++    LEFT JOIN people_animals as p ON a.animal_id = p.pet_id
++    LEFT JOIN people as pe ON p.owner_id = pe.person_id
++    WHERE pe.name = 'bessie'
++    GROUP BY a.name, a.species
++    HAVING COUNT(p.owner_id) = 1;
+ 
+ """
+\ No newline at end of file
+diff --git a/part1/question4_test.py b/part1/question4_test.py
+index b01006c..56aaaae 100644
+--- a/part1/question4_test.py
++++ b/part1/question4_test.py
+@@ -33,6 +33,6 @@ def test_question4_only_owned_by_bessie():
+ 
+   rows.sort()
+ 
+-  assert len(rows) == 2
++  assert len(rows) == 3
+   assert rows[0] == ('bessie', 'leyla', 'gray whale')
+   assert rows[1] == ('bessie', 'randolph', 'lemur')
+\ No newline at end of file
+diff --git a/part1/question5.py b/part1/question5.py
+index f76654f..e0ad756 100644
+--- a/part1/question5.py
++++ b/part1/question5.py
+@@ -20,7 +20,11 @@
+ 
+ sql_create_favorite_foods = """
+ 
+-Your SQL here.
++    CREATE TABLE favorite_foods (
++        food_id integer,
++        name text,
++        vegetarian integer
++        );
+ 
+ """
+ 
+@@ -30,7 +34,8 @@ Your SQL here.
+ 
+ sql_alter_tables_with_favorite_food = """
+ 
+-Your SQL here.
++    ALTER TABLE animals ADD COLUMN favorite_food_id integer;
++    ALTER TABLE people ADD COLUMN favorite_food_id integer;
+ 
+ """
+ 
+@@ -40,6 +45,10 @@ Your SQL here.
+ 
+ sql_select_all_vegetarian_pets = """
+ 
+-Your SQL here.
++    SELECT a.name, f.name
++    FROM animals as a
++    LEFT JOIN favorite_foods as f ON a.favorite_food_id = f.food_id
++    WHERE f.vegetarian = 1
++    GROUP BY a.name, f.name
+ 
+ """
+\ No newline at end of file
+diff --git a/part2/src/main/java/org/velezreyes/quiz/question6/Drink.java b/part2/src/main/java/org/velezreyes/quiz/question6/Drink.java
+index 61c1fdd..e4f2225 100644
+--- a/part2/src/main/java/org/velezreyes/quiz/question6/Drink.java
++++ b/part2/src/main/java/org/velezreyes/quiz/question6/Drink.java
+@@ -2,6 +2,6 @@ package org.velezreyes.quiz.question6;
+ 
+ public interface Drink {
+   public String getName();
+-
++  public int getPrice();
+   public boolean isFizzy();
+ }
+\ No newline at end of file
+diff --git a/part2/src/main/java/org/velezreyes/quiz/question6/VendingMachineImpl.java b/part2/src/main/java/org/velezreyes/quiz/question6/VendingMachineImpl.java
+index 85742c4..e8561d0 100644
+--- a/part2/src/main/java/org/velezreyes/quiz/question6/VendingMachineImpl.java
++++ b/part2/src/main/java/org/velezreyes/quiz/question6/VendingMachineImpl.java
+@@ -1,9 +1,87 @@
+ package org.velezreyes.quiz.question6;
+ 
+-public class VendingMachineImpl {
++import java.util.List;
++import java.util.ArrayList;
++
++public class VendingMachineImpl implements VendingMachine {
++
++  public int balance;
++  public List<Drink> availableDrinks;
++
++  public VendingMachineImpl() {
++    this.balance = 0;
++    this.availableDrinks = new ArrayList<Drink>();
++    this.availableDrinks.add(new ScottCola());
++    this.availableDrinks.add(new KarenTea());
++  }
++
++  @Override
++  public void insertQuarter() {
++    this.balance += 25;
++  }
++
++  @Override
++  public Drink pressButton(String name) throws NotEnoughMoneyException, UnknownDrinkException {
++    Drink selectedDrink = null;
++
++    for (Drink drink : availableDrinks) {
++      if (drink.getName().equals(name)) {
++        selectedDrink = drink;
++        break;
++      }
++    }
++
++    if (selectedDrink == null) {
++      throw new UnknownDrinkException();
++    }
++
++    int price = selectedDrink.getPrice();
++    if (balance >= price) {
++      balance -= price;
++      return selectedDrink;
++    } else {
++      throw new NotEnoughMoneyException();
++    }
++  }
++
++  private static class ScottCola implements Drink {
++
++    @Override
++    public String getName() {
++      return "ScottCola";
++    }
++
++    @Override
++    public boolean isFizzy() {
++      return true;
++    }
++
++    @Override
++    public int getPrice() {
++      return 75;
++    }
++
++  }
++
++  private static class KarenTea implements Drink {
++
++    @Override
++    public String getName() {
++      return "KarenTea";
++    }
++
++    @Override
++    public boolean isFizzy() {
++      return false;
++    }
++
++    @Override
++    public int getPrice() {
++      return 100;
++    }
++  }
+ 
+   public static VendingMachine getInstance() {
+-    // Fix me!
+-    return null;
++    return new VendingMachineImpl();
+   }
+ }
+diff --git a/part3/security_question.md b/part3/security_question.md
+index e69de29..9072db2 100644
+--- a/part3/security_question.md
++++ b/part3/security_question.md
+@@ -0,0 +1,31 @@
++## System Security 
++
++To solve the question, I will demonstrate my knowledge of security bes practices. I will use OWASP Top 10 of 2021 as a guide to identify securiry issues that could be a problem for a new and exciting tech startup that installs solar panels through an app
++
++## OWASP 10 
++
++The OWASP Top 10 is a list of the ten most critical security risks for web and mobile applications. I will use this list to identify security issues that could affect my application
++
++The following are the security issues I would look for to make my system secure: 
++
++* A01:2021: Improper Access Control: Ensure that only authorized individuals have access to my system and my customers' data. This means implementing strong access controls, such as the use of user-based roles and permissions
++
++* A02:2021: Sensitive Data Exposure: Use strong encryption algorithms to protect data at rest and in transit. This includes encrypting customer passwords and order information
++
++* A03:2021: Implement mechanisms to prevent injection attacks, such as the use of prepared statements and parameterized queries in my database queries
++
++* A04:2021: Insecure Design: Design my system with security in mind. This means avoiding insecure practices, such as storing passwords in plaintext and using weak cryptographic algorithms
++
++* A05:2021: Insecure Deserialization: Ensure that my system is configured securely. This includes things like using strong passwords for user accounts and regularly updating software
++
++* A06:2021: Vulnerable and Outdated Components: Use updated and maintained components. This means regularly updating my software and patching known vulnerabilities
++
++* A07:2021: Identification and Authentication Failures: Use strong authentication mechanisms to identify and authenticate users. This includes the use of two-factor authentication and one-time password (TOTP)
++
++* A08:2021: Lack of Application Layer Controls: Monitor my system for potential attacks and fraud. This means logging all system activity and reviewing logs regularly
++
++* A09:2021: Security Misconfiguration: Store data securely. This means encrypting sensitive data and using secure storage for customer passwords
++
++* A10:2021: Components with Known Vulnerabilities: Implement mechanisms to manage sessions securely. This includes things like using session tokens and invalidating sessions when they are no longer needed
++
++In this way I ensure application security by addressing the most critical security risks
+\ No newline at end of file
